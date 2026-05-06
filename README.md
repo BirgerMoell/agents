@@ -1,6 +1,6 @@
 # Agents from Scratch
 
-README hero infographic prompt: [docs/infographic-prompt.md](docs/infographic-prompt.md)
+![Agents from Scratch architecture infographic](docs/assets/agents-from-scratch-infographic.png)
 
 This repo is an example of trying to code up an AI agent from scratch
 
@@ -37,4 +37,3 @@ The agent will have memory files
 
 ## Context engineering
 We will use systems to handle the context including compacting the context in chat
-
