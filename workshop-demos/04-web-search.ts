@@ -1,77 +1,41 @@
-import { arg, printAnswer, runAgent, type DemoTool, type FunctionDefinition } from "./lib/runtime.js";
+import { arg, printAnswer, runAgent } from "./lib/runtime.js";
+import { createWebResearch } from "./lib/web-research.js";
 
-const definition: FunctionDefinition = {
-  type: "function",
-  name: "search_web",
-  description: "Search the public web for up-to-date information and return titles, URLs, and snippets.",
-  strict: true,
-  parameters: {
-    type: "object",
-    properties: { query: { type: "string", description: "A concise web search query." } },
-    required: ["query"],
-    additionalProperties: false,
-  },
-};
-
-const searchWeb: DemoTool = {
-  definition,
-  run: async ({ query }) => {
-    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(String(query))}`;
-    const response = await fetch(url, {
-      headers: { "user-agent": "Mozilla/5.0 (compatible; AgentWorkshop/1.0)" },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!response.ok) return `error: web search returned HTTP ${response.status}`;
-    const html = await response.text();
-    const results: string[] = [];
-    const pattern = /class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>([\s\S]*?)<\/(?:a|div)>/g;
-    for (const match of html.matchAll(pattern)) {
-      const target = decodeRedirect(decodeHtml(match[1]));
-      const title = stripHtml(match[2]);
-      const snippet = stripHtml(match[3]);
-      results.push(`${title}\n${target}\n${snippet}`);
-      if (results.length === 5) break;
-    }
-    return results.length > 0 ? results.join("\n\n") : "No search results found.";
-  },
-};
-
-function decodeRedirect(value: string): string {
-  try {
-    const url = new URL(value, "https://duckduckgo.com");
-    return url.searchParams.get("uddg") ?? url.toString();
-  } catch {
-    return value;
-  }
-}
-
-function stripHtml(value: string): string {
-  return decodeHtml(value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
-}
-
-function decodeHtml(value: string): string {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/&#39;/g, "'")
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-}
+const today = new Date();
+const start = new Date(today);
+start.setUTCDate(start.getUTCDate() - 7);
+const endDate = isoDate(today);
+const startDate = isoDate(start);
+const research = createWebResearch();
 
 const prompt = arg(
   "Question",
-  "Find one important AI announcement published from 2026-09-20 through 2026-09-27. Summarize it and cite the source URL.",
+  `Find one important AI announcement published from ${startDate} through ${endDate}. ` +
+    "Explain what was announced and why it matters, using a primary source if possible.",
 );
-printAnswer(await runAgent({
+
+const result = await runAgent({
   prompt,
   instructions: [
-    "Today is 2026-09-27.",
-    "Use search_web before answering and include the date range in your search query.",
-    "Prefer a primary source and include its URL.",
-    "Only claim an announcement is in range when the search evidence explicitly shows a publication date from 2026-09-20 through 2026-09-27.",
-    "If the results do not prove that, say the evidence is insufficient instead of guessing a date.",
+    `Today is ${endDate}.`,
+    `For recent-news requests, search only from ${startDate} through ${endDate}.`,
+    "You must call search_web, then call open_web_page with at least one returned result_id before answering.",
+    "Search snippets are discovery leads, not evidence. Base factual claims only on opened page content.",
+    "Only cite exact URLs returned by open_web_page. Never construct, autocomplete, or alter a URL.",
+    "Opening a page verifies its contents, not its truth or primary-source status.",
+    "Only call a source primary or official when open_web_page classifies it as official-domain.",
+    "If a source is secondary-or-unverified, attribute the claims to that publication and qualify them.",
+    "A publication date must be present in the evidence and inside the requested range.",
+    "If no opened primary source proves a qualifying announcement, say that no verified result was found.",
   ].join(" "),
-  tools: [searchWeb],
-}));
+  tools: research.tools,
+  maxSteps: 8,
+  validateAnswer: research.validateAnswer,
+});
+printAnswer(result);
+
+console.log(`  audit   searched ${research.searchedUrls.size} URL(s); opened ${research.openedUrls.size} page(s).`);
+
+function isoDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}

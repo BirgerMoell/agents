@@ -24,7 +24,11 @@ const calculator: DemoTool = {
     const gpus = Number(args.gpu_count);
     const days = Number(args.days);
     const total = price * gpus * days * 24;
-    return JSON.stringify({ hours: days * 24, total_euros: Math.round(total * 100) / 100 });
+    return JSON.stringify({
+      duration_hours: days * 24,
+      total_gpu_hours: days * 24 * gpus,
+      total_euros: Math.round(total * 100) / 100,
+    });
   },
 };
 
