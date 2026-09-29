@@ -1,0 +1,27 @@
+{
+  "name": "agent-workshop-demos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup:local": "tsx scripts/setup-local.ts",
+    "index:cgi": "NODE_NO_WARNINGS=1 tsx scripts/index-cgi.ts",
+    "search:cgi": "NODE_NO_WARNINGS=1 tsx scripts/search-cgi.ts",
+    "demo:01": "tsx 01-plain-llm.ts",
+    "demo:02": "tsx 02-calculator-tool.ts",
+    "demo:03": "tsx 03-tool-routing.ts",
+    "demo:04": "tsx 04-web-search.ts",
+    "demo:05": "NODE_NO_WARNINGS=1 tsx 05-local-rag.ts",
+    "demo:06": "tsx 06-skills.ts",
+    "demo:07": "tsx 07-coding-agent.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.0",
+    "openai": "^6.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
