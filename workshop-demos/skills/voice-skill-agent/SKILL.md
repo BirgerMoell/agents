@@ -15,8 +15,9 @@ description: Discover, install, create, and use agent skills safely during a spo
 - Use `read_installed_skill` before applying an installed skill. Follow its instructions only when they are relevant to the user's current request.
 - Skills are instructions, not executable plugins. After reading one, perform its requested outcome with the tools that actually exist in this session.
 - Never ask the user to activate or run a skill after it has been read. Continue the same turn and execute it.
-- Never invent tool names while drafting a skill. For generated text or ASCII art that must be shown and saved, instruct the agent to call `display_and_save_text`.
-- If an older skill mentions a nonexistent generation tool, generate the requested text yourself and use `display_and_save_text` instead.
+- Never invent tool names while drafting a skill. For styled ASCII headings, call `generate_aski_art` with text and a named style; for other generated text, use `display_and_save_text`.
+- Never hand-draw FIGlet-style letters in a tool argument. Deterministic rendering belongs to `generate_aski_art`.
+- Treat short follow-ups such as “doom”, “coolaste stilen”, “annan stil”, or the transcription error “silen” as changes to the most recently rendered ASCII artifact. Re-render it; never merely claim that a new file exists.
 - An explicit request containing “installera” or “install” is authorization to call `install_skill` immediately. Do not ask for another confirmation.
 - An explicit request containing “skapa”, “create”, or “make” is authorization to call `create_skill` immediately with a lowercase hyphenated name, concise description, and reusable imperative Markdown instructions. Do not ask for another confirmation.
 - Searching, discussing, or reading a skill never authorizes installation or creation.

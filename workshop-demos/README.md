@@ -90,6 +90,7 @@ npm run demo:09
 npm run demo:10
 npm run demo:11
 npm run demo:12
+npm run demo:12_bash
 npm run demo:13
 ```
 
@@ -104,6 +105,7 @@ npm run demo:10 -- ./path/to/meeting.wav
 npm run demo:11 -- --stt-model parakeet
 npm run demo:11 -- --voice chatterbox
 npm run demo:12 -- --text "Vad är temperaturen i Stockholm?"
+npm run demo:12_bash -- --text "Kör pwd och visa vilka Python-filer som finns i scripts" --no-play
 npm run demo:13 -- --text "Vilka skills är installerade?" --no-play
 ```
 
@@ -121,6 +123,12 @@ the reply text normally begins in under a second once loaded; Swedish Chatterbox
 take several more seconds to synthesize before playback begins. Playback uses macOS
 `afplay` and therefore follows the output device selected in System Settings.
 
+While demos 11–13 are speaking, press **Space** to stop playback and immediately return to
+listening. This push-to-interrupt mode is enabled by default and safely clears queued speaker
+echo before the next utterance. It works with laptop speakers. Pass `--no-space-to-talk` to
+disable it. The separate `--barge-in` option listens continuously for speech during playback
+and is still best used with headphones.
+
 ## Local versus offline
 
 The model is local in every demo. Demos 02–03 and 05–11 can run without internet after
@@ -136,12 +144,26 @@ stay on the computer. Its weather and city-time tools use Open-Meteo geocoding a
 endpoints, so those two capabilities require internet access. The terminal prints the exact
 tool arguments and returned observations before the answer is spoken.
 
+`demo:12_bash` adds unrestricted Bash execution as the current macOS user. Enabling it at
+startup is the single opt-in; there is no confirmation before each command. Commands start in
+the workshop folder, may access anything the current user can access, time out after 30 seconds
+by default (maximum 300), and print their combined output and exit code. Use plain `demo:12`
+when shell access is not part of the demonstration.
+Swedish speech variants such as “bärsverktyget” are recognized as Bash. If the conversational
+model still omits the tool call, a local structured-command fallback plans and executes the
+requested Bash command instead of returning an empty response.
+
 Demo 13 keeps all Demo 12 tools and adds a live skills.sh catalog plus local skill creation.
 The requested `find-skills` and `teach` skills are installed globally for Codex. Searches are
 read-only. An explicit spoken “installera” or “skapa” performs that requested action directly,
 without a second confirmation round. New skills are rescanned and can be read and used in the
 same voice session. Generated text and ASCII art can be displayed and saved through a safe
 artifact tool restricted to `outputs/demo-13`.
+The installed `aski-art-generator` skill uses deterministic FIGlet rendering instead of asking
+the language model to hand-draw letters. It supports `standard`, `slant`, `small`, `big`,
+`block`, `doom`, `digital`, `shadow`, `speed`, and `banner3-D` styles. The voice session remembers
+the latest ASCII artifact, so short follow-ups such as “gör den i doom” or “annan stil” actually
+re-render the same text and save a newly named file.
 Created skills go to `~/.codex/skills`; catalog skills are installed through the official
 `npx skills` CLI. Internet access is required for catalog search and installation.
 
@@ -171,9 +193,9 @@ You can also copy `.env.example` to `.env` to keep local overrides.
    vision model to critique the real pixels, then applies only the highest-value fixes.
 10. Run demo 10 with the bundled meeting recording, then replace it with a short audience
     recording to show that private transcription and action extraction stay on the laptop.
-11. Finish with demo 11. Use headphones, talk naturally, and start speaking while the agent
-    answers to demonstrate barge-in by running `npm run demo:11 -- --barge-in`. Normal mode
-    disables barge-in so the laptop speakers cannot interrupt themselves. On the first run,
+11. Finish with demo 11. Press Space while the agent talks to interrupt it safely, even through
+    laptop speakers. With headphones, demonstrate fully hands-free interruption by running
+    `npm run demo:11 -- --barge-in`. On the first run,
     allow microphone access for Codex or Terminal in macOS System Settings. Press Ctrl+C to stop.
 12. Add demo 12 to show that the same voice loop can load a routing skill and call real tools.
     Ask for Stockholm weather, Tokyo time, a calculation, a CGI fact, or this Mac's battery.

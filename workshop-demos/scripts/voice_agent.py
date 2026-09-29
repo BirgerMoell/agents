@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["mlx-audio", "parakeet-mlx==0.5.2", "huggingface_hub[hf_xet]", "supertonic==1.3.1", "soundfile", "sounddevice", "webrtcvad-wheels", "numpy", "misaki[en]"]
 # ///
-import argparse, json, os, queue, subprocess, tempfile, threading, time, urllib.request
+import argparse, json, os, queue, select, subprocess, sys, tempfile, termios, threading, time, tty, urllib.request
 from collections import deque
 from pathlib import Path
 import numpy as np
@@ -78,22 +78,36 @@ def ask_ollama(text, history, skill):
             print(token, end="", flush=True); chunks.append(token)
     print(flush=True)
     print(f"  answered   {time.perf_counter()-started:.2f}s total", flush=True)
-    return "".join(chunks).strip()
+    return "".join(chunks).strip() or "Jag fick inget svar från modellen. Försök igen."
 
-def play_audio(audio, rate, mic=None, allow_barge_in=False):
+def play_audio(audio, rate, mic=None, allow_barge_in=False, space_to_talk=True):
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp:
         sf.write(temp.name, np.asarray(audio, dtype=np.float32), rate)
         audio_path = temp.name
     if mic:
         mic.barge.clear(); mic.consecutive = 0
-    mode = "barge-in enabled; use headphones" if allow_barge_in else "speaker-safe; barge-in off"
+    keyboard_fd, terminal_state = None, None
+    if space_to_talk and sys.stdin.isatty():
+        try:
+            keyboard_fd = sys.stdin.fileno(); terminal_state = termios.tcgetattr(keyboard_fd)
+            tty.setcbreak(keyboard_fd)
+        except (OSError, termios.error): keyboard_fd, terminal_state = None, None
+    voice_mode = "voice barge-in enabled; use headphones" if allow_barge_in else "speaker-safe"
+    key_mode = "; press SPACE to interrupt and talk" if keyboard_fd is not None else ""
+    mode = voice_mode + key_mode
     print(f"  speaking   macOS default output ({mode})", flush=True)
     player = subprocess.Popen(
         ["/usr/bin/afplay", audio_path], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
     )
-    interrupted = False
+    interrupted, space_interrupted = False, False
     try:
         while player.poll() is None:
+            if keyboard_fd is not None and select.select([keyboard_fd], [], [], 0)[0]:
+                if os.read(keyboard_fd, 1) == b" ":
+                    interrupted = space_interrupted = True; player.terminate()
+                    if mic: mic.drain()
+                    print("  interrupted SPACE pressed — listening now", flush=True)
+                    break
             if mic and allow_barge_in and mic.barge.is_set():
                 interrupted = True; player.terminate()
                 print("  interrupted user started speaking", flush=True)
@@ -105,7 +119,8 @@ def play_audio(audio, rate, mic=None, allow_barge_in=False):
     finally:
         if player.poll() is None: player.kill()
         os.unlink(audio_path)
-    if mic and not interrupted: mic.drain()
+        if terminal_state is not None: termios.tcsetattr(keyboard_fd, termios.TCSADRAIN, terminal_state)
+    if mic and (not interrupted or space_interrupted): mic.drain()
     if not interrupted: print("  played     audio finished", flush=True)
     return interrupted
 
@@ -115,6 +130,8 @@ def main():
     parser.add_argument("--no-play", action="store_true")
     parser.add_argument("--barge-in", action="store_true",
                         help="Allow speech to interrupt playback; requires headphones to avoid speaker echo")
+    parser.add_argument("--no-space-to-talk", action="store_true",
+                        help="Disable the default SPACE key playback interruption")
     parser.add_argument("--stt-model", choices=["pianissimo", "parakeet"], default=None,
                         help="Swedish Pianissimo is the default; use parakeet for multilingual speech")
     parser.add_argument("--language", choices=["sv", "en"], default=None,
@@ -155,7 +172,7 @@ def main():
             started = time.perf_counter(); audio, rate = synthesize(tts, answer, reference)
             print(f"  voice      synthesized in {time.perf_counter()-started:.2f}s", flush=True)
             if not args.no_play:
-                play_audio(audio, rate, mic, args.barge_in)
+                play_audio(audio, rate, mic, args.barge_in, not args.no_space_to_talk)
             history.extend([{"role":"user","content":utterance},{"role":"assistant","content":answer}])
             history = history[-8:]
             if args.text: break
