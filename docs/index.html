@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Agents from Scratch is a compact TypeScript project that exposes the real model-tool loop."
+    />
+    <meta property="og:title" content="Agents from Scratch" />
+    <meta
+      property="og:description"
+      content="A minimal TypeScript agent loop with tools and Agent Skills."
+    />
+    <meta property="og:image" content="assets/agents-from-scratch-infographic.png" />
+    <title>Agents from Scratch</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Agents from Scratch home">
+        <span class="brand-mark" aria-hidden="true">TS</span>
+        <span>Agents from Scratch</span>
+      </a>
+      <nav class="nav-links" aria-label="Page sections">
+        <a href="#loop">Loop</a>
+        <a href="#files">Files</a>
+        <a href="#skills">Skills</a>
+        <a href="https://github.com/BirgerMoell/agents">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img
+          class="hero-image"
+          src="assets/agents-from-scratch-infographic.png"
+          alt="Architecture infographic showing the Agents from Scratch TypeScript loop"
+        />
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Minimal TypeScript agent</p>
+          <h1 id="hero-title">Build the loop before you hide it.</h1>
+          <p class="hero-text">
+            A compact course project that shows how agent.ts, tools.ts, skills.ts, and .skills work
+            together around OpenAI function calls.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button button-primary" href="https://github.com/BirgerMoell/agents">
+              View on GitHub
+            </a>
+            <a class="button button-secondary" href="#start">Run locally</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="intro section-grid reveal" id="loop" aria-labelledby="loop-title">
+        <div>
+          <p class="eyebrow">The core loop</p>
+          <h2 id="loop-title">A small agent you can trace line by line.</h2>
+        </div>
+        <p>
+          The model receives tool schemas, asks for function_call items, tools.ts executes local
+          work, and function_call_output returns to the model until it can answer.
+        </p>
+      </section>
+
+      <section class="flow" aria-label="Agent loop steps">
+        <ol class="flow-line">
+          <li class="reveal">
+            <span>01</span>
+            <strong>User message</strong>
+            <p>The terminal prompt sends one message into the TypeScript chat loop.</p>
+          </li>
+          <li class="reveal">
+            <span>02</span>
+            <strong>agent.ts</strong>
+            <p>The OpenAI request includes system instructions, skill metadata, and tools.</p>
+          </li>
+          <li class="reveal">
+            <span>03</span>
+            <strong>tools.ts</strong>
+            <p>Local functions read files, list directories, search, fetch URLs, and run Bash.</p>
+          </li>
+          <li class="reveal">
+            <span>04</span>
+            <strong>Assistant answer</strong>
+            <p>The loop stops when the model returns final text instead of another tool call.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="artifact reveal" aria-labelledby="artifact-title">
+        <div class="artifact-copy">
+          <p class="eyebrow">Architecture at a glance</p>
+          <h2 id="artifact-title">The whole repo fits in one diagram.</h2>
+          <p>
+            The infographic maps the core files, the repeated tool-call cycle, and the Agent Skills
+            pattern that lets the model load instructions only when needed.
+          </p>
+        </div>
+        <a
+          class="artifact-image-link"
+          href="assets/agents-from-scratch-infographic.png"
+          aria-label="Open full-size Agents from Scratch infographic"
+        >
+          <img
+            src="assets/agents-from-scratch-infographic.png"
+            alt="Full Agents from Scratch architecture infographic"
+          />
+        </a>
+      </section>
+
+      <section class="files" id="files" aria-labelledby="files-title">
+        <div class="section-grid reveal">
+          <div>
+            <p class="eyebrow">Core files</p>
+            <h2 id="files-title">Few files, clear responsibilities.</h2>
+          </div>
+          <p>
+            The repository keeps the architecture close to the surface: one loop, one tool module,
+            one skill module, and a small library of example skills.
+          </p>
+        </div>
+        <div class="file-list" aria-label="Core repository files">
+          <div class="file-item reveal">
+            <span>agent.ts</span>
+            <strong>Chat loop</strong>
+            <p>Creates Responses API calls and continues after function outputs.</p>
+          </div>
+          <div class="file-item reveal">
+            <span>tools.ts</span>
+            <strong>Schemas and runners</strong>
+            <p>Defines the model-facing tools and executes local work.</p>
+          </div>
+          <div class="file-item reveal">
+            <span>skills.ts</span>
+            <strong>Skill discovery</strong>
+            <p>Finds valid SKILL.md files and injects metadata into context.</p>
+          </div>
+          <div class="file-item reveal">
+            <span>.skills</span>
+            <strong>Reusable instructions</strong>
+            <p>Stores small procedural capabilities the model can load on demand.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="skills" id="skills" aria-labelledby="skills-title">
+        <div class="skills-copy reveal">
+          <p class="eyebrow">Agent Skills</p>
+          <h2 id="skills-title">Instructions stay small until they matter.</h2>
+          <p>
+            Skill metadata appears in the system prompt. Full skill instructions and references
+            load only when the user task calls for them.
+          </p>
+        </div>
+        <div class="skill-steps" aria-label="Skill loading steps">
+          <div class="skill-step reveal">
+            <span>01</span>
+            <strong>.skills/name/SKILL.md</strong>
+          </div>
+          <div class="skill-step reveal">
+            <span>02</span>
+            <strong>metadata in prompt</strong>
+          </div>
+          <div class="skill-step reveal">
+            <span>03</span>
+            <strong>load_skill</strong>
+          </div>
+          <div class="skill-step reveal">
+            <span>04</span>
+            <strong>read_skill_file</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="start" id="start" aria-labelledby="start-title">
+        <div class="start-copy reveal">
+          <p class="eyebrow">Run it</p>
+          <h2 id="start-title">Install, start, inspect.</h2>
+        </div>
+        <pre class="terminal reveal" aria-label="Setup commands"><code>git clone https://github.com/BirgerMoell/agents
+cd agents
+npm install
+export OPENAI_API_KEY=sk-...
+npm start</code></pre>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Agents from Scratch</span>
+      <a href="https://github.com/BirgerMoell/agents">GitHub repository</a>
+    </footer>
+
+    <script src="site.js"></script>
+  </body>
+</html>
