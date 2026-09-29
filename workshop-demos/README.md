@@ -1,6 +1,6 @@
 # Local AI Agent Workshop Demos
 
-Thirteen small demos that add one capability at a time. All reasoning and tool selection run
+Fourteen small demos that add one capability at a time. All reasoning and tool selection run
 locally through Ollama; no OpenAI API key or cloud model is required.
 
 The default model is **gpt-oss:20b**. Its Ollama build is about 14 GB and is a good fit for
@@ -22,6 +22,7 @@ strong native function calling. The larger 120B model does not fit this machine.
 | 10 | Private meeting notes | Transcribe local audio, then extract grounded actions and decisions |
 | 11 | Speech-to-speech agent | Listen, think, speak, and support barge-in entirely on the Mac |
 | 12 | Skilled voice tool agent | Speak naturally while calling live weather, time, math, CGI RAG, and Mac tools |
+| 13 | Self-extending voice agent | Find, inspect, install, create, and immediately use skills while talking |
 
 ## One-time setup
 
@@ -89,6 +90,7 @@ npm run demo:09
 npm run demo:10
 npm run demo:11
 npm run demo:12
+npm run demo:13
 ```
 
 Most demos accept a replacement prompt after `--`:
@@ -102,6 +104,7 @@ npm run demo:10 -- ./path/to/meeting.wav
 npm run demo:11 -- --stt-model parakeet
 npm run demo:11 -- --voice chatterbox
 npm run demo:12 -- --text "Vad är temperaturen i Stockholm?"
+npm run demo:13 -- --text "Vilka skills är installerade?" --no-play
 ```
 
 Every custom tool call is printed as `LLM -> tool(...)`, followed by the observation sent
@@ -132,6 +135,15 @@ Demo 12 is mostly local: calculation, Mac status, CGI vector search, speech, and
 stay on the computer. Its weather and city-time tools use Open-Meteo geocoding and forecast
 endpoints, so those two capabilities require internet access. The terminal prints the exact
 tool arguments and returned observations before the answer is spoken.
+
+Demo 13 keeps all Demo 12 tools and adds a live skills.sh catalog plus local skill creation.
+The requested `find-skills` and `teach` skills are installed globally for Codex. Searches are
+read-only. An explicit spoken “installera” or “skapa” performs that requested action directly,
+without a second confirmation round. New skills are rescanned and can be read and used in the
+same voice session. Generated text and ASCII art can be displayed and saved through a safe
+artifact tool restricted to `outputs/demo-13`.
+Created skills go to `~/.codex/skills`; catalog skills are installed through the official
+`npx skills` CLI. Internet access is required for catalog search and installation.
 
 To try a different installed Ollama model:
 
@@ -165,3 +177,5 @@ You can also copy `.env.example` to `.env` to keep local overrides.
     allow microphone access for Codex or Terminal in macOS System Settings. Press Ctrl+C to stop.
 12. Add demo 12 to show that the same voice loop can load a routing skill and call real tools.
     Ask for Stockholm weather, Tokyo time, a calculation, a CGI fact, or this Mac's battery.
+13. End with demo 13. Ask it to search skills.sh, create a skill, then use the new skill without
+    leaving the voice conversation. Explicit create/install commands run immediately.

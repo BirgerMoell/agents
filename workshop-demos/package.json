@@ -21,6 +21,7 @@
     "demo:10": "tsx 10-private-meeting-notes.ts",
     "demo:11": "/Users/birger/.local/bin/uv run scripts/voice_agent.py",
     "demo:12": "/Users/birger/.local/bin/uv run scripts/voice_tool_agent.py",
+    "demo:13": "/Users/birger/.local/bin/uv run scripts/voice_skill_agent.py",
     "test": "tsx --test lib/*.test.ts",
     "check": "tsc --noEmit"
   },
