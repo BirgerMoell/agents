@@ -8,6 +8,7 @@
     "setup:audio": "tsx scripts/setup-audio.ts",
     "index:cgi": "NODE_NO_WARNINGS=1 tsx scripts/index-cgi.ts",
     "search:cgi": "NODE_NO_WARNINGS=1 tsx scripts/search-cgi.ts",
+    "demo:00_setup": "tsx 00_setup.ts",
     "demo:01_plain": "tsx 01_plain.ts",
     "demo:01_tool": "tsx 01_tool.ts",
     "demo:02": "tsx 02-calculator-tool.ts",

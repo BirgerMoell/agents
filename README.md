@@ -9,13 +9,24 @@ You are not allowed to use AI agents or AI programming tools when coding the age
 You are allowed to look up resources online.
 
 ## Setup
-The tool will use Open AI API with tool calling running in a loop.
+
+The agent uses Ollama and the workshop's `gpt-oss:20b` model by default. Start Ollama and
+download the model once:
 
 ```bash
 npm install
-export OPENAI_API_KEY=sk-...
+ollama pull gpt-oss:20b
 npm start
 ```
+
+No OpenAI API key is needed for the local agent. It keeps conversation history in the process
+and streams its answer to the terminal as the model generates it. Tool calls still run in a loop,
+with their results passed back to the local model. Set `LOCAL_LLM_MODEL` to use another installed
+Ollama model or `LOCAL_LLM_BASE_URL` if Ollama runs at a different address. The defaults are
+shown in [.env.example](.env.example).
+
+To use the original OpenAI Responses API path instead, set `AGENT_PROVIDER=openai`,
+`OPENAI_API_KEY`, and optionally `OPENAI_MODEL`.
 
 **Note:** Use `npm start` (runs TypeScript with tsx). To use plain Node instead, run `npm run build` then `npm run run` — do not use `node agent.ts` (Node doesn’t run TypeScript and will fail looking for `tools.js`).
 
